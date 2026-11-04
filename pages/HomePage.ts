@@ -56,4 +56,26 @@ export class HomePage {
     await this.searchInput.fill(productName);
     await this.searchButton.click();
   }
+
+  /**
+   * Checks whether the browser is on the configured application home path.
+   */
+  async isApplicationHomeVisible(): Promise<boolean> {
+    const applicationUrl = new URL(process.env.WEB_APP_URL || 'http://localhost/opencart/upload/');
+    const currentUrl = new URL(this.page.url());
+    const isHomeRoute =
+      currentUrl.searchParams.get('route') === 'common/home' ||
+      currentUrl.pathname === applicationUrl.pathname ||
+      (currentUrl.pathname === `${applicationUrl.pathname}index.php` &&
+        currentUrl.searchParams.get('route') === null);
+    return currentUrl.origin === applicationUrl.origin && isHomeRoute;
+  }
+
+  /**
+   * Opens the account menu and checks that logged-out account options are visible.
+   */
+  async isLoggedOutNavigationVisible(): Promise<boolean> {
+    await this.myAccountMenu.click();
+    return (await this.loginLink.isVisible()) && (await this.registerLink.isVisible());
+  }
 }

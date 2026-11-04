@@ -48,6 +48,7 @@ export class ProductPage {
    * Reads the success confirmation text after adding to cart.
    */
   async getSuccessText(): Promise<string> {
+    await this.successText.waitFor({ state: 'visible' });
     return (await this.successText.textContent())?.trim() || '';
   }
 }

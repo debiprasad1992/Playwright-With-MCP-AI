@@ -65,6 +65,7 @@ export class RegisterPage {
    * Checks whether the account-creation confirmation is displayed.
    */
   async isRegistrationSuccessVisible(): Promise<boolean> {
+    await this.successHeading.waitFor({ state: 'visible' });
     return await this.successHeading.isVisible();
   }
 }

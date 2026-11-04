@@ -8,6 +8,7 @@ export class LoginPage {
   private readonly passwordInput: Locator;
   private readonly submitButton: Locator;
   private readonly warningText: Locator;
+  private readonly loginErrorAlert: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -16,13 +17,16 @@ export class LoginPage {
     this.passwordInput = page.locator('input[name="password"]');
     this.submitButton = page.getByRole('button', { name: /^login$/i });
     this.warningText = page.getByText('Warning: No match for E-Mail Address and/or Password.');
+    this.loginErrorAlert = page.locator('.alert.alert-danger');
   }
 
   /**
    * Verifies the login page is visible.
    */
   async isLoginPageVisible(): Promise<boolean> {
-    return await this.page.getByRole('heading', { name: /returning customer/i }).isVisible();
+    const heading = this.page.getByRole('heading', { name: /returning customer/i });
+    await heading.waitFor({ state: 'visible' });
+    return await heading.isVisible();
   }
 
   /**
@@ -31,8 +35,8 @@ export class LoginPage {
    * @param password Customer password.
    */
   async login(email: string, password: string): Promise<void> {
-    await this.emailInput.fill(email);
-    await this.passwordInput.fill(password);
+    await this.emailInput.fill(email.trim());
+    await this.passwordInput.fill(password.trim());
     await this.submitButton.click();
   }
 
@@ -41,5 +45,25 @@ export class LoginPage {
    */
   async isWarningVisible(): Promise<boolean> {
     return await this.warningText.isVisible();
+  }
+
+  /**
+   * Checks whether OpenCart displayed a server-side login error.
+   */
+  async isLoginErrorAlertVisible(): Promise<boolean> {
+    return await this.loginErrorAlert.isVisible();
+  }
+
+  /**
+   * Checks whether either login input is blocked by native browser validation.
+   */
+  async hasNativeValidationError(): Promise<boolean> {
+    const emailInvalid = await this.emailInput.evaluate(
+      (element) => !(element as HTMLInputElement).validity.valid,
+    );
+    const passwordInvalid = await this.passwordInput.evaluate(
+      (element) => !(element as HTMLInputElement).validity.valid,
+    );
+    return emailInvalid || passwordInvalid;
   }
 }
